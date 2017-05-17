@@ -1,0 +1,26 @@
+html {
+  background-color: black;
+  font: 1em monospace;
+  color: white;
+}
+
+img {
+  display: block;
+  margin: auto;
+  margin-top: 5%;
+  width: 40%;
+  background-color: white;
+  padding: 1px;
+}
+
+.center {
+  text-align: center;
+}
+
+.left {
+  display: inline-block;
+  text-align: left;
+  width: 40%;
+  padding: 10px;
+}
+
