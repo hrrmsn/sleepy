@@ -106,6 +106,9 @@ url_managers = [
 
 # Main function of WSGI application.
 def application(environ, start_response):
+  for key in environ:
+    print key + '->' + str(environ[key])
+
   if environ['REQUEST_METHOD'].lower() == 'post':
     if environ['PATH_INFO'].lower().strip('/') == 'verify':
       return verify(environ, start_response)
