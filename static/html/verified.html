@@ -2,19 +2,24 @@
 <html>
   <head>
     <meta charset="utf-8">
-    <link rel="stylesheet" type="text/css" href="static/css/verify.css">
+    <link rel="stylesheet" type="text/css" href="static/css/verified.css">
     <link rel="shortcut icon" type="image/x-icon" href="static/img/favicon.ico">
     <title>Hello, Ilya!</title>
   </head>
   <body>
-    <p>Yeah! You proved us that you're Ilya Salnikov. Now you need to solve a simple problem if you want to receive 
-      your gift. Good luck buddy!</p>
-    <br>
-    <p>
-    </p>
-    <form action="/solve" method="post">
-      <input type="text" name="answer" required>
-      <button type="submit">try</button>
-    </form>
+    <img src="static/img/problem.jpg">
+    <div class="center">
+      <div class="left">
+        <p>Yeah! You proved us that you're Ilya Salnikov. Now you need to solve a simple problem if you want to receive 
+          your gift. Good luck buddy!</p>
+        <p>A stadium has the form of two adjoining circles. A perimeter of the stadium is 6&pi;. A square of the 
+          stadium is 7&pi;. What is the minimum possible length (L) of the stadium?</p>
+        <form action="/check-answer" method="post">
+          <input type="text" name="problem_answer" pattern="\s*\d+\s*" placeholder="type the answer here" 
+            title="The answer should be a number." required>
+          <button type="submit">click</button>
+        </form>
+      </div>
+    </div>
   </body>
 </html>

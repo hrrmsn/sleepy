@@ -7,6 +7,8 @@ from urlparse import parse_qs
 
 
 PASSPORT_INFO_REGEX = r'\s*(\d{4})\s*(\d{6})\s*'
+PROBLEM_ANSWER_REGEX = r'\s*(\d+)\s*'
+VERIFIED = False
 
 # Helper functions are defined here.
 def get_response_headers(content_type):
@@ -48,6 +50,16 @@ def not_found(environ, start_response):
   return [response_body.encode('utf-8')]
 
 def verify(environ, start_response):
+  global VERIFIED
+
+  response_body = ''
+  if VERIFIED:
+    response_body = readfile('static/html/verified.html')
+    start_response('200 OK', get_response_headers('text/html'))
+    return [response_body.encode('utf-8')]
+  elif environ['REQUEST_METHOD'].lower() != 'post':
+    return not_found(environ, start_response)
+
   request_body_size = int(environ.get('CONTENT_LENGTH', 0))
   request_body = environ['wsgi.input'].read(request_body_size)
   parsed_qs = parse_qs(request_body)
@@ -58,18 +70,28 @@ def verify(environ, start_response):
   passport_number = matched.group(2)
 
   if passport_series + passport_number == '9211198283':
-    title = 'Hello, Ilya!'
-    body_content = """<p>It seems that you aren't Ilya Salnikov. You need to stop look this page in such case. 
-      Otherwise please take a new <a href="/">attempt</a>.</p>"""
+    VERIFIED = True
+    response_body = readfile('static/html/verified.html')
   else:
-    title = 'stranger'
-    body_content = """<p>Yeah! You proved us that you're Ilya Salnikov. Now you need to solve a simple problem if you 
-      want to receive your gift. Good luck buddy!</p>"""
+    response_body = readfile('static/html/not-verified.html')
 
-  response_body = readfile('static/html/verify.html')
-  response_body = response_body.format(
-    **{'title': title, 'body_content': body_content}
-  )
+  start_response('200 OK', get_response_headers('text/html'))
+  return [response_body.encode('utf-8')]
+
+def check_answer(environ, start_response):
+  request_body_size = int(environ.get('CONTENT_LENGTH', 0))
+  request_body = environ['wsgi.input'].read(request_body_size)
+  parsed_qs = parse_qs(request_body)
+  problem_info = parsed_qs['problem_answer'].pop()
+
+  matched = re.match(PROBLEM_ANSWER_REGEX, problem_info)
+  problem_answer = matched.group(1)
+
+  response_body = ''
+  if problem_answer == '4':
+    response_body = readfile('static/html/congrats.html')
+  else:
+    response_body = readfile('static/html/sorry.html')
 
   start_response('200 OK', get_response_headers('text/html'))
   return [response_body.encode('utf-8')]
@@ -77,18 +99,18 @@ def verify(environ, start_response):
 
 url_managers = [
   (r'/$', index),
-  (r'/static/.*', static)
+  (r'/static/.*', static),
+  (r'/verify$', verify)
 ]
 
 
 # Main function of WSGI application.
 def application(environ, start_response):
-  for key in environ:
-    print key + '->' + str(environ[key])
-  print '***\n\n'
-
   if environ['REQUEST_METHOD'].lower() == 'post':
-    return verify(environ, start_response)
+    if environ['PATH_INFO'].lower().strip('/') == 'verify':
+      return verify(environ, start_response)
+    elif environ['PATH_INFO'].lower().strip('/') == 'check-answer':
+      return check_answer(environ, start_response)
 
   for regex, func in url_managers:
     if re.match(regex, environ['PATH_INFO']):
